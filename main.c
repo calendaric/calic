@@ -113,6 +113,9 @@ void drawCalendar() {
     const uint8_t weeks_count = sizeof(calic.week) / sizeof(calic.week[0]);
     int needBold = 0;
 
+    printf("%3s%3s%3s%3s%3s%3s%3s", "mo", "tu", "we", "th", "fr", "sa", "su");
+    printf("\n");
+
     for (uint8_t i = 0; i < weeks_count; ++i) {
         for (uint8_t j = 0; j < sizeof(calic.week[i]); ++j) {
             const uint8_t d = calic.week[i][j];
@@ -154,10 +157,8 @@ int main(void) {
     char buffer[80];
 
     while (keepRunning_) {
-        drawTimebar(buffer, sizeof(buffer));
 
-        printf("%3s%3s%3s%3s%3s%3s%3s", "mo", "tu", "we", "th", "fr", "sa", "su");
-        printf("\n");
+        drawTimebar(buffer, sizeof(buffer));
 
         drawCalendar();
 
