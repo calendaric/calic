@@ -68,8 +68,7 @@ struct Calendar calendar() {
     int month = tstruct.tm_mon + 1;
     int year = tstruct.tm_year + 1900;
     int week = 0;
-    struct Calendar calendar;
-    memset(&calendar, 0, sizeof(calendar));
+    struct Calendar calendar = {0};
     calendar.aux.current_day_number = (uint8_t)tstruct.tm_mday;
     tstruct.tm_mday = 1;
     getYearAndWeek(tstruct, &year, &week);
