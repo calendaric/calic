@@ -4,7 +4,8 @@ Terminal interactive calendar written in C
 Download main.c file
 
 Install and run:
-```cc -o calic main.c
+```
+cc -o calic main.c
 sudo cp calic /usr/bin
 alias calic=/usr/bin/calic
 
