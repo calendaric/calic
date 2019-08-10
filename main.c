@@ -108,46 +108,59 @@ void intHandler(int n) {
     printf("  ");
 }
 
+void drawCalendar() {
+    Calendar calic = calendar();
+    const uint8_t weeks_count = sizeof(calic.week) / sizeof(calic.week[0]);
+    int needBold = 0;
+
+    for (uint8_t i = 0; i < weeks_count; ++i) {
+        for (uint8_t j = 0; j < sizeof(calic.week[i]); ++j) {
+            const uint8_t d = calic.week[i][j];
+            if (d == calic.aux.current_day_number) {
+                printf(" \033[7m");
+                printf("%*d", 2,d);
+                printf("\033[27m");
+                continue;
+            }
+            if (d == 1 && needBold == 0) {
+                needBold = 1;
+                printf("\033[1m");
+            }
+            if (d == 31 && needBold == 1) {
+                needBold = 2;
+            }
+            if (d == 1 && needBold == 2) {
+                printf("\033[0m");
+            }
+            printf("%3d", d);
+        }
+        printf("\n");
+    }
+}
+
+void drawTimebar(char* buffer, int len) {
+    time_t rawtime;
+    struct tm* timeinfo;
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
+
+    strftime(buffer, len, "%d.%m.%Y   %X", timeinfo);
+    puts(buffer);
+}
+
 int main(void) {
     signal(SIGINT, intHandler);
 
     char buffer[80];
-    while (keepRunning_) {
-        time_t rawtime;
-        struct tm * timeinfo;
-        time (&rawtime);
-        timeinfo = localtime (&rawtime);
 
-        strftime (buffer, 80,"%d.%m.%Y   %X",timeinfo);
-        puts (buffer);
-        struct Calendar calic = calendar();
-        const uint8_t weeks_count = sizeof(calic.week) / sizeof(calic.week[0]);
+    while (keepRunning_) {
+        drawTimebar(buffer, sizeof(buffer));
+
         printf("%3s%3s%3s%3s%3s%3s%3s", "mo", "tu", "we", "th", "fr", "sa", "su");
         printf("\n");
-        int needBold = 0;
-        for (uint8_t i = 0; i < weeks_count; ++i) {
-            for (uint8_t j = 0; j < sizeof(calic.week[i]); ++j) {
-                const uint8_t d = calic.week[i][j];
-                if (d == calic.aux.current_day_number) {
-                    printf(" \033[7m");
-                    printf("%*d", 2,d);
-                    printf("\033[27m");
-                    continue;
-                }
-                if (d == 1 && needBold == 0) {
-                    needBold = 1;
-                    printf("\033[1m");
-                }
-                if (d == 31 && needBold == 1) {
-                    needBold = 2;
-                }
-                if (d == 1 && needBold == 2) {
-                    printf("\033[0m");
-                }
-                printf("%3d", d);
-            }
-            printf("\n");
-        }
+
+        drawCalendar();
+
         sleep(1);
 
         printf("\b\r");
