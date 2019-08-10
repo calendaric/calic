@@ -7,13 +7,30 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-static volatile int keepRunning = 1;
+typedef struct Calendar_s {
+    uint8_t week[6][7];
+    struct {
+        uint8_t weekNumber;
+        uint8_t current_day_number;
+    } aux;
+} Calendar;
+
+bool isLeap(int year);
+int getNumberOfDays(int month, int year);
+void getYearAndWeek(struct tm TM, int* YYYY, int* WW);
+Calendar calendar();
+void drawTimebar(char* buffer, int len);
+void drawCalendar();
+
+static volatile int keepRunning_ = 1;
 
 bool isLeap(int year) {
     if (year % 4 == 0) {
-        if ( year % 100 == 0 && year % 400 != 0 ) {
+        if (year % 100 == 0 && year % 400 != 0) {
             return false;
-        } else return true;
+        } else {
+            return true;
+        }
     }
     return false;
 }
@@ -51,15 +68,7 @@ void getYearAndWeek(struct tm TM, int* YYYY, int* WW) {
     }
 }
 
-struct Calendar {
-    uint8_t week[6][7];
-    struct {
-        uint8_t weekNumber;
-        uint8_t current_day_number;
-    } aux;
-};
-
-struct Calendar calendar() {
+Calendar calendar() {
     time_t     now = time(0);
     struct tm  tstruct;
     char       buf[80];
@@ -68,7 +77,7 @@ struct Calendar calendar() {
     int month = tstruct.tm_mon + 1;
     int year = tstruct.tm_year + 1900;
     int week = 0;
-    struct Calendar calendar = {0};
+    Calendar calendar = {0};
     calendar.aux.current_day_number = (uint8_t)tstruct.tm_mday;
     tstruct.tm_mday = 1;
     getYearAndWeek(tstruct, &year, &week);
@@ -88,15 +97,16 @@ struct Calendar calendar() {
 }
 
 void intHandler(int n) {
-    keepRunning = 0;
+    keepRunning_ = 0;
     printf("\b\r");
     printf("  ");
 }
 
 int main(void) {
     signal(SIGINT, intHandler);
+
     char buffer[80];
-    while(keepRunning) {
+    while (keepRunning_) {
         time_t rawtime;
         struct tm * timeinfo;
         time (&rawtime);
@@ -133,12 +143,19 @@ int main(void) {
             printf("\n");
         }
         sleep(1);
+
         printf("\b\r");
         fflush(stdout);
         printf("\033[");printf("%d", 8); printf("A");
     }
-    for (int i = 0; i < 8; ++i) printf("                                                                  \n");
+
+    for (int i = 0; i < 8; ++i) {
+        printf("                                                                  \n");
+    }
+
     printf("\b\r");
     printf("\033[");printf("%d", 8); printf("A");
+
     return 0;
 }
+
