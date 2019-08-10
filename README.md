@@ -1,14 +1,13 @@
 # calic
 Terminal interactive calendar written in C
 
-Download main.c file
-
 Install and run:
 ```
-cc -o calic main.c
-sudo cp calic /usr/bin
-alias calic=/usr/bin/calic
-
+mkdir build && cd build && cmake ..
+make
+make install
+```
+```
 calic
 10.08.2019   13:38:04
  mo tu we th fr sa su
