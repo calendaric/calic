@@ -7,24 +7,47 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-static volatile int keepRunning = 1;
+typedef struct Calendar_s {
+    uint8_t week[6][7];
+    struct {
+        uint8_t weekNumber;
+        uint8_t current_day_number;
+    } aux;
+} Calendar;
+
+bool isLeap(int year);
+int getNumberOfDays(int month, int year);
+void getYearAndWeek(struct tm TM, int* YYYY, int* WW);
+Calendar calendar();
+void drawTimebar(char* buffer, int len);
+void drawCalendar();
+
+static volatile int keepRunning_ = 1;
 
 bool isLeap(int year) {
     if (year % 4 == 0) {
-        if ( year % 100 == 0 && year % 400 != 0 ) {
+        if (year % 100 == 0 && year % 400 != 0) {
             return false;
-        } else return true;
+        } else {
+            return true;
+        }
     }
     return false;
 }
 
 int getNumberOfDays(int month, int year) {
-    if(month == 2) {
-        if (isLeap(year)) return 29;
-        else return 28;
+    switch (month) {
+        case 2 :
+            return (isLeap(year) ? 29 : 28);
+        case 4 :
+        case 6 :
+        case 9 :
+        case 11 :
+            return 30;
+        default :
+            return 31;
     }
-    else if (month == 4 || month == 6 || month == 9 || month == 11) return 30;
-    else return 31;
+    return 0;
 }
 
 void getYearAndWeek(struct tm TM, int* YYYY, int* WW) {
@@ -51,15 +74,7 @@ void getYearAndWeek(struct tm TM, int* YYYY, int* WW) {
     }
 }
 
-struct Calendar {
-    uint8_t week[6][7];
-    struct {
-        uint8_t weekNumber;
-        uint8_t current_day_number;
-    } aux;
-};
-
-struct Calendar calendar() {
+Calendar calendar() {
     time_t     now = time(0);
     struct tm  tstruct;
     char       buf[80];
@@ -68,8 +83,7 @@ struct Calendar calendar() {
     int month = tstruct.tm_mon + 1;
     int year = tstruct.tm_year + 1900;
     int week = 0;
-    struct Calendar calendar;
-    memset(&calendar, 0, sizeof(calendar));
+    Calendar calendar = {0};
     calendar.aux.current_day_number = (uint8_t)tstruct.tm_mday;
     tstruct.tm_mday = 1;
     getYearAndWeek(tstruct, &year, &week);
@@ -89,57 +103,79 @@ struct Calendar calendar() {
 }
 
 void intHandler(int n) {
-    keepRunning = 0;
+    keepRunning_ = 0;
     printf("\b\r");
     printf("  ");
 }
 
+void drawCalendar() {
+    Calendar calic = calendar();
+    const uint8_t weeks_count = sizeof(calic.week) / sizeof(calic.week[0]);
+    int needBold = 0;
+
+    printf("%3s%3s%3s%3s%3s%3s%3s", "mo", "tu", "we", "th", "fr", "sa", "su");
+    printf("\n");
+
+    for (uint8_t i = 0; i < weeks_count; ++i) {
+        for (uint8_t j = 0; j < sizeof(calic.week[i]); ++j) {
+            const uint8_t d = calic.week[i][j];
+            if (d == calic.aux.current_day_number) {
+                printf(" \033[7m");
+                printf("%*d", 2,d);
+                printf("\033[27m");
+                continue;
+            }
+            if (d == 1 && needBold == 0) {
+                needBold = 1;
+                printf("\033[1m");
+            }
+            if (d == 31 && needBold == 1) {
+                needBold = 2;
+            }
+            if (d == 1 && needBold == 2) {
+                printf("\033[0m");
+            }
+            printf("%3d", d);
+        }
+        printf("\n");
+    }
+}
+
+void drawTimebar(char* buffer, int len) {
+    time_t rawtime;
+    struct tm* timeinfo;
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
+
+    strftime(buffer, len, "%d.%m.%Y   %X", timeinfo);
+    puts(buffer);
+}
+
 int main(void) {
     signal(SIGINT, intHandler);
-    char buffer[80];
-    while(keepRunning) {
-        time_t rawtime;
-        struct tm * timeinfo;
-        time (&rawtime);
-        timeinfo = localtime (&rawtime);
 
-        strftime (buffer, 80,"%d.%m.%Y   %X",timeinfo);
-        puts (buffer);
-        struct Calendar calic = calendar();
-        const uint8_t weeks_count = sizeof(calic.week) / sizeof(calic.week[0]);
-        printf("%3s%3s%3s%3s%3s%3s%3s", "mo", "tu", "we", "th", "fr", "sa", "su");
-        printf("\n");
-        int needBold = 0;
-        for (uint8_t i = 0; i < weeks_count; ++i) {
-            for (uint8_t j = 0; j < sizeof(calic.week[i]); ++j) {
-                const uint8_t d = calic.week[i][j];
-                if (d == calic.aux.current_day_number) {
-                    printf(" \033[7m");
-                    printf("%*d", 2,d);
-                    printf("\033[27m");
-                    continue;
-                }
-                if (d == 1 && needBold == 0) {
-                    needBold = 1;
-                    printf("\033[1m");
-                }
-                if (d == 31 && needBold == 1) {
-                    needBold = 2;
-                }
-                if (d == 1 && needBold == 2) {
-                    printf("\033[0m");
-                }
-                printf("%3d", d);
-            }
-            printf("\n");
-        }
+    char buffer[80];
+
+    while (keepRunning_) {
+
+        drawTimebar(buffer, sizeof(buffer));
+
+        drawCalendar();
+
         sleep(1);
+
         printf("\b\r");
         fflush(stdout);
         printf("\033[");printf("%d", 8); printf("A");
     }
-    for (int i = 0; i < 8; ++i) printf("                                                                  \n");
+
+    for (int i = 0; i < 8; ++i) {
+        printf("                                                                  \n");
+    }
+
     printf("\b\r");
     printf("\033[");printf("%d", 8); printf("A");
+
     return 0;
 }
+
