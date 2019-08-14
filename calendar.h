@@ -3,11 +3,11 @@
 #include <time.h>
 
 typedef struct Calendar_s {
-    uint8_t week[6][7];
     struct {
-        uint8_t weekNumber;
-        uint8_t currentDayNumber;
+        int8_t weekNumber;
+        int8_t currentDayNumber;
     } aux;
+    uint8_t week[6][7];
 } Calendar;
 
 typedef enum Month_e { January = 1, Febrary = 2, March = 3, April = 4, May = 5, June = 6, July = 7, August = 8, September = 9, October = 10, November = 11, December = 12 } Month;
@@ -25,9 +25,4 @@ typedef struct Time_s {
     int yearDay;
 } Time;
 
-bool isLeap(int year);
-int getNumberOfDays(int month, int year);
-void getYearAndWeek(struct tm TM, int* YYYY, int* WW);
-Calendar calendar(void);
-void drawTimebar(char* buffer, size_t len);
-void interruptHandler(int);
+Calendar createCalendar(void);

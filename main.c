@@ -23,17 +23,17 @@ void drawTimebar(char* buffer, size_t len) {
 }
 
 void drawCalendar() {
-    Calendar calic = calendar();
-    const uint8_t weeksCount = sizeof(calic.week) / sizeof(calic.week[0]);
+    Calendar calendar = createCalendar();
+    const uint8_t weeksCount = sizeof(calendar.week) / sizeof(calendar.week[0]);
     int needBold = 0;
 
     printf("%3s%3s%3s%3s%3s%3s%3s", "Mo", "Tu", "We", "Th", "Fr", "Sa", "Su");
     printf("\n");
 
     for (uint8_t i = 0; i < weeksCount; ++i) {
-        for (uint8_t j = 0; j < sizeof(calic.week[i]); ++j) {
-            const uint8_t d = calic.week[i][j];
-            if (d == calic.aux.currentDayNumber) {
+        for (uint8_t j = 0; j < sizeof(calendar.week[i]); ++j) {
+            const uint8_t d = calendar.week[i][j];
+            if (d == calendar.aux.currentDayNumber) {
                 printf(" \033[7m");
                 printf("%*d", 2,d);
                 printf("\033[27m");
