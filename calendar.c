@@ -81,9 +81,11 @@ Time convertTime(struct tm tm) {
 }
 
 void fillCurrentMonth(Calendar* calendar, size_t weekIndex, size_t weekDayIndex, size_t daysCountInCurrentMonth) {
+    const size_t rowCount = sizeof(calendar->week) / sizeof (calendar->week[0]);
+    const size_t colCount = sizeof(calendar->week[0]);
     size_t n = 1;
-    for (size_t row = weekIndex; row < sizeof(calendar->week); ++row) {
-        for (size_t col = weekDayIndex; sizeof(calendar->week[0]); ++col) {
+    for (size_t row = weekIndex; row < rowCount; ++row) {
+        for (size_t col = weekDayIndex; col < colCount; ++col) {
             if (n > daysCountInCurrentMonth) {
                 n = 1;
             }
