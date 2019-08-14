@@ -12,6 +12,9 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${WARNING_FLAGS}")
 
 file (GLOB C_FILES *.c)
 set (SOURCES ${C_FILES})
+set(INCLUDE_DIR ./)
+include_directories (${INCLUDE_DIR})
+
 
 add_executable(${TARGET} ${SOURCES})
 
