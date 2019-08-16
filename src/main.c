@@ -11,7 +11,7 @@ void interruptHandler(int n) {
     (void)n;
     keepRunning_ = 0;
     printf("\b\r");
-    printf("  ");
+    printf("    ");
 }
 
 void drawTimebar(const struct tm* timeinfo, char* buffer, size_t len) {
@@ -20,7 +20,8 @@ void drawTimebar(const struct tm* timeinfo, char* buffer, size_t len) {
 }
 
 void drawCalendar(const struct tm* timeinfo) {
-    Calendar calendar = createCalendar(timeinfo);
+    const Time currentTime  = convertTime(timeinfo);
+    Calendar calendar = createCalendar(&currentTime);
     const uint8_t weeksCount = sizeof(calendar.week) / sizeof(calendar.week[0]);
     int needBold = 0;
 

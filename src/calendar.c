@@ -1,19 +1,5 @@
 #include "calendar.h"
 
-typedef enum { January = 1, Febrary = 2, March = 3, April = 4, May = 5, June = 6, July = 7, August = 8, September = 9, October = 10, November = 11, December = 12 } Month;
-typedef enum { Monday = 1, Tuesday = 2, Wednesday = 3, Thursday = 4, Friday = 5, Saturday = 6, Sunday = 7 } WeekDay;
-
-typedef struct {
-    int seconds;
-    int minutes;
-    int hours;
-    int monthDay;
-    Month month;
-    int year;
-    WeekDay weekDay;
-    int yearDay;
-} Time;
-
 static bool isLeap(int year) {
     if (year % 4 == 0) {
         if (year % 100 == 0 && year % 400 != 0) {
@@ -39,18 +25,55 @@ static int getNumberOfDays(int month, int year) {
     }
 }
 
-static WeekDay weekDayInMonthBegin(int currentMday, WeekDay currentWday) {
-    while (currentMday > 1) {
-        --currentMday;
-        --currentWday;
-        if (currentWday < Monday) {
-            currentWday = Sunday;
+static WeekDay weekDayInMonthBegin(int currentMonthDay, WeekDay currentWeekDay) {
+    while (currentMonthDay > 1) {
+        --currentMonthDay;
+        --currentWeekDay;
+        if (currentWeekDay < Monday) {
+            currentWeekDay = Sunday;
         }
     }
-    return currentWday;
+    return currentWeekDay;
 }
 
-static Time convertTime(const struct tm* tm) {
+static void fillCurrentMonth(Calendar* calendar, size_t weekIndex, size_t weekDayIndex, size_t daysCountInCurrentMonth) {
+    const size_t rowCount = sizeof(calendar->week) / sizeof (calendar->week[0]);
+    const size_t colCount = sizeof(calendar->week[0]);
+    size_t n = 1;
+    for (size_t row = weekIndex; row < rowCount; ++row) {
+        for (size_t col = weekDayIndex; col < colCount; ++col) {
+            if (n > daysCountInCurrentMonth) {
+                n = 1;
+            }
+            if (col == 6) {
+                weekDayIndex = 0;
+            }
+            calendar->week[row][col] = (int8_t)(n);
+            ++n;
+        }
+    }
+}
+
+static void fillPreviousMonth(Calendar* calendar, size_t weekIndex, size_t weekDayIndex, size_t daysCountInPreviousMonth) {
+    // offset to last days of previous month
+    if (weekIndex == 1) {
+        weekIndex = 0;
+        weekDayIndex = 6;
+    }
+    else {
+        --weekDayIndex;
+    }
+
+    int n = (int)daysCountInPreviousMonth;
+    for (int row = (int)weekIndex; row >= 0; --row) {
+        for (int col = (int)weekDayIndex; col >= 0; --col) {
+            calendar->week[row][col] = (int8_t)(n);
+            --n;
+        }
+    }
+}
+
+Time convertTime(const struct tm* tm) {
     Time time;
     time.seconds = tm->tm_sec;
     time.minutes = tm->tm_min;
@@ -70,48 +93,13 @@ static Time convertTime(const struct tm* tm) {
     return time;
 }
 
-static void fillCurrentMonth(Calendar* calendar, size_t weekIndex, size_t weekDayIndex, size_t daysCountInCurrentMonth) {
-    const size_t rowCount = sizeof(calendar->week) / sizeof (calendar->week[0]);
-    const size_t colCount = sizeof(calendar->week[0]);
-    size_t n = 1;
-    for (size_t row = weekIndex; row < rowCount; ++row) {
-        for (size_t col = weekDayIndex; col < colCount; ++col) {
-            if (n > daysCountInCurrentMonth) {
-                n = 1;
-            }
-            calendar->week[row][col] = (int8_t)(n);
-            n++;
-            if (col == 6) weekDayIndex = 0;
-        }
-    }
-}
-
-static void fillPreviousMonth(Calendar* calendar, size_t weekIndex, size_t weekDayIndex, size_t daysCountInPreviousMonth) {
-    // offset to last days of previous month
-    if (weekIndex == 1) {
-        weekIndex = 0; weekDayIndex = 6;
-    }
-    else {
-        weekDayIndex = weekDayIndex - 1;
-    }
-
-    int n = (int)daysCountInPreviousMonth;
-    for (int row = (int)weekIndex; row >= 0; --row) {
-        for (int col = (int)weekDayIndex; col >= 0; --col) {
-            calendar->week[row][col] = (int8_t)(n);
-            n--;
-        }
-    }
-}
-
-Calendar createCalendar(const struct tm* current_timeinfo) {
-    const Time currentTime = convertTime(current_timeinfo);
+Calendar createCalendar(const Time* currentTime) {
     Calendar calendar = { .weekNumber = 0, .currentDayNumber = 0, .week = {{0}} };
-    calendar.currentDayNumber = (int8_t)currentTime.monthDay;
+    calendar.currentDayNumber = (int8_t)currentTime->monthDay;
 
-    const WeekDay weekDayFirst = weekDayInMonthBegin(currentTime.monthDay, currentTime.weekDay);
-    const uint8_t daysCountInCurrentMonth = (uint8_t)getNumberOfDays(currentTime.month, currentTime.year);
-    const uint8_t daysCountInPreviousMonth = (uint8_t)getNumberOfDays(currentTime.month - 1, currentTime.year);
+    const WeekDay weekDayFirst = weekDayInMonthBegin(currentTime->monthDay, currentTime->weekDay);
+    const uint8_t daysCountInCurrentMonth = (uint8_t)getNumberOfDays(currentTime->month, currentTime->year);
+    const uint8_t daysCountInPreviousMonth = (uint8_t)getNumberOfDays(currentTime->month - 1, currentTime->year);
 
     size_t dayOfWeekIndex = 0;
     size_t weekInMonthIndex = 0;
@@ -127,5 +115,3 @@ Calendar createCalendar(const struct tm* current_timeinfo) {
 
     return calendar;
 }
-
-
