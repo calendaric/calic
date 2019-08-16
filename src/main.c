@@ -6,24 +6,22 @@
 #include "calendar.h"
 
 static volatile sig_atomic_t keepRunning_ = 1;
+
 void interruptHandler(int n) {
+    (void)n;
     keepRunning_ = 0;
     printf("\b\r");
-    printf("  ");
+    printf("    ");
 }
 
-void drawTimebar(char* buffer, size_t len) {
-    time_t rawtime;
-    struct tm* timeinfo;
-    time(&rawtime);
-    timeinfo = localtime(&rawtime);
-
+void drawTimebar(const struct tm* timeinfo, char* buffer, size_t len) {
     strftime(buffer, len, "%d.%m.%Y   %X", timeinfo);
     puts(buffer);
 }
 
-void drawCalendar() {
-    Calendar calendar = createCalendar();
+void drawCalendar(const struct tm* timeinfo) {
+    const Time currentTime  = convertTime(timeinfo);
+    Calendar calendar = createCalendar(&currentTime);
     const uint8_t weeksCount = sizeof(calendar.week) / sizeof(calendar.week[0]);
     int needBold = 0;
 
@@ -33,7 +31,7 @@ void drawCalendar() {
     for (uint8_t i = 0; i < weeksCount; ++i) {
         for (uint8_t j = 0; j < sizeof(calendar.week[i]); ++j) {
             const uint8_t d = calendar.week[i][j];
-            if (d == calendar.aux.currentDayNumber) {
+            if (d == calendar.currentDayNumber) {
                 printf(" \033[7m");
                 printf("%*d", 2,d);
                 printf("\033[27m");
@@ -61,8 +59,11 @@ int main(void) {
     char buffer[80];
 
     while (keepRunning_) {
-        drawTimebar(buffer, sizeof(buffer));
-        drawCalendar();
+        time_t     now = time(0);
+        struct tm  timeinfo;
+        timeinfo = *localtime(&now);
+        drawTimebar(&timeinfo, buffer, sizeof(buffer));
+        drawCalendar(&timeinfo);
         sleep(1);
         printf("\b\r");
         fflush(stdout);

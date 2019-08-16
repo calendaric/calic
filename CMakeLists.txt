@@ -1,22 +1,19 @@
-cmake_minimum_required(VERSION 3.0.2)
+project("calic" C) 
+cmake_minimum_required(VERSION 3.0)
 
-project(calic)
-set(TARGET calic)
-set(BASE_DIR ${CMAKE_CURRENT_LIST_DIR}/)
-
-set(CMAKE_C_FLAGS "-std=c11")
-set(WARNING_FLAGS "-Wall -Wextra -Wpedantic")
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g")
-set(CMAKE_C_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Os")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${WARNING_FLAGS}")
-
-file (GLOB C_FILES *.c)
-set (SOURCES ${C_FILES})
-set(INCLUDE_DIR ./)
-include_directories (${INCLUDE_DIR})
+# Let's tell it a bit about our environment
 
 
-add_executable(${TARGET} ${SOURCES})
+# We declare a variable to select what to build
+set(TARGET_GROUP release CACHE STRING "What Should I Build?")
 
-install(TARGETS ${TARGET} DESTINATION /usr/local/bin)
+add_subdirectory(src) 
 
+if(TARGET_GROUP STREQUAL test)
+  include(CTest)
+  add_subdirectory(external) 
+  add_subdirectory(test)
+  SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}) 	
+else() 
+  SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
+endif()
