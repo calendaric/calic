@@ -1,5 +1,19 @@
 #include "calendar.h"
 
+typedef enum { January = 1, Febrary = 2, March = 3, April = 4, May = 5, June = 6, July = 7, August = 8, September = 9, October = 10, November = 11, December = 12 } Month;
+typedef enum { Monday = 1, Tuesday = 2, Wednesday = 3, Thursday = 4, Friday = 5, Saturday = 6, Sunday = 7 } WeekDay;
+
+typedef struct {
+    int seconds;
+    int minutes;
+    int hours;
+    int monthDay;
+    Month month;
+    int year;
+    WeekDay weekDay;
+    int yearDay;
+} Time;
+
 static bool isLeap(int year) {
     if (year % 4 == 0) {
         if (year % 100 == 0 && year % 400 != 0) {
@@ -13,7 +27,8 @@ static bool isLeap(int year) {
 
 static int getNumberOfDays(int month, int year) {
     switch (month) {
-    case Febrary :        return (isLeap(year) ? 29 : 28);
+    case Febrary :
+        return (isLeap(year) ? 29 : 28);
     case April :
     case June :
     case September :
@@ -89,12 +104,10 @@ static void fillPreviousMonth(Calendar* calendar, size_t weekIndex, size_t weekD
     }
 }
 
-Calendar createCalendar(const struct tm* timeinfo) {
-    Time currentTime = convertTime(timeinfo);
-    int week = 0;
+Calendar createCalendar(const struct tm* current_timeinfo) {
+    const Time currentTime = convertTime(current_timeinfo);
     Calendar calendar = { .weekNumber = 0, .currentDayNumber = 0, .week = {{0}} };
     calendar.currentDayNumber = (int8_t)currentTime.monthDay;
-    calendar.weekNumber = (int8_t)week;
 
     const WeekDay weekDayFirst = weekDayInMonthBegin(currentTime.monthDay, currentTime.weekDay);
     const uint8_t daysCountInCurrentMonth = (uint8_t)getNumberOfDays(currentTime.month, currentTime.year);
