@@ -13,8 +13,7 @@ static bool isLeap(int year) {
 
 static int getNumberOfDays(int month, int year) {
     switch (month) {
-    case Febrary :
-        return (isLeap(year) ? 29 : 28);
+    case Febrary :        return (isLeap(year) ? 29 : 28);
     case April :
     case June :
     case September :
@@ -26,7 +25,8 @@ static int getNumberOfDays(int month, int year) {
 }
 
 static WeekDay weekDayInMonthBegin(int currentMday, WeekDay currentWday) {
-    while (currentMday --> Monday) {
+    while (currentMday > 1) {
+        --currentMday;
         --currentWday;
         if (currentWday < Monday) {
             currentWday = Sunday;
@@ -64,7 +64,7 @@ static void fillCurrentMonth(Calendar* calendar, size_t weekIndex, size_t weekDa
             if (n > daysCountInCurrentMonth) {
                 n = 1;
             }
-            calendar->week[row][col] = (uint8_t)(n);
+            calendar->week[row][col] = (int8_t)(n);
             n++;
             if (col == 6) weekDayIndex = 0;
         }
@@ -83,23 +83,18 @@ static void fillPreviousMonth(Calendar* calendar, size_t weekIndex, size_t weekD
     int n = (int)daysCountInPreviousMonth;
     for (int row = (int)weekIndex; row >= 0; --row) {
         for (int col = (int)weekDayIndex; col >= 0; --col) {
-            calendar->week[row][col] = (uint8_t)(n);
+            calendar->week[row][col] = (int8_t)(n);
             n--;
         }
     }
 }
 
-Calendar createCalendar() {
-    time_t     now = time(0);
-    struct tm  tm;
-    char       buf[80];
-    tm = *localtime(&now);
-    Time currentTime = convertTime(&tm);
-    strftime(buf, sizeof(buf), "%Y-%m-%d %X", &tm);
+Calendar createCalendar(const struct tm* timeinfo) {
+    Time currentTime = convertTime(timeinfo);
     int week = 0;
-    Calendar calendar = { { .weekNumber = 0, .currentDayNumber = 0}, .week = {{0}} };
-    calendar.aux.currentDayNumber = (int8_t)currentTime.monthDay;
-    calendar.aux.weekNumber = (int8_t)week;
+    Calendar calendar = { .weekNumber = 0, .currentDayNumber = 0, .week = {{0}} };
+    calendar.currentDayNumber = (int8_t)currentTime.monthDay;
+    calendar.weekNumber = (int8_t)week;
 
     const WeekDay weekDayFirst = weekDayInMonthBegin(currentTime.monthDay, currentTime.weekDay);
     const uint8_t daysCountInCurrentMonth = (uint8_t)getNumberOfDays(currentTime.month, currentTime.year);
