@@ -1,4 +1,4 @@
-#include "calendar.h"
+#include "Calendar.h"
 
 static bool isLeap(int year) {
     if (year % 4 == 0) {
@@ -71,26 +71,6 @@ static void fillPreviousMonth(Calendar* calendar, size_t weekIndex, size_t weekD
             --n;
         }
     }
-}
-
-Time convertTime(const struct tm* tm) {
-    Time time;
-    time.seconds = tm->tm_sec;
-    time.minutes = tm->tm_min;
-    time.hours = tm->tm_hour;
-    time.monthDay = tm->tm_mday;
-    time.month = (Month)(tm->tm_mon + 1);
-    time.year = tm->tm_year + 1900;
-
-    if (tm->tm_wday == 0) {
-        time.weekDay = Sunday;
-    }
-    else {
-        time.weekDay = (WeekDay)tm->tm_wday;
-    }
-
-    time.yearDay = tm->tm_year;
-    return time;
 }
 
 Calendar createCalendar(const Time* currentTime) {
