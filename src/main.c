@@ -115,7 +115,6 @@ static void drawCalendar(const struct tm *timeinfo)
 int main(void)
 {
 
-    
     signal(SIGINT, *interruptHandler);
     signal(SIGHUP, *interruptHandler);
     signal(SIGQUIT, *interruptHandler);
@@ -149,9 +148,11 @@ int main(void)
                 CtrlC = 3,
                 CtrlD = 4,
                 CtrlZ = 26,
-                Esc = 27
+                Esc = 27,
+                Left = 68,
+                Right = 67,
             };
-            if (c == CtrlC || c == CtrlC || c == CtrlZ)
+            if (c == CtrlC || c == CtrlD || c == CtrlZ || c == 'q')
             {
                 printf("\n\r");
                 printf("\033[");
@@ -160,21 +161,18 @@ int main(void)
                 printf("A");
                 break;
             }
-            else if (c == Esc)
+
+            switch (c)
             {
-                int _ = getch();
-                switch (getch())
-                {
-                case 'D':
-                    month_cursor -= 1;
-                    sub_one_month(&calendar_info);
-                    break;
-                case 'C':
-                    month_cursor += 1;
-                    add_one_month(&calendar_info);
-                default:
-                    break;
-                }
+            case Left:
+                month_cursor -= 1;
+                sub_one_month(&calendar_info);
+                break;
+            case Right:
+                month_cursor += 1;
+                add_one_month(&calendar_info);
+            default:
+                break;
             }
         }
         timeinfo = *localtime(&now);
@@ -205,4 +203,3 @@ int main(void)
     printf("\033[?25h");
     return 0;
 }
-
