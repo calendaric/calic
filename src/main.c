@@ -56,16 +56,15 @@ static volatile sig_atomic_t keepRunning_ = 1;
 static void interruptHandler(int n)
 {
     (void)n;
-    keepRunning_ = 0;
+    __sync_fetch_and_sub(&keepRunning_, 1);
     printf("\b\r");
-    printf("    ");
+    printf("                                  \r");
 }
 
 static void drawTimebar(const struct tm *timeinfo, char *buffer, size_t len)
 {
     strftime(buffer, len, "%d.%m.%Y   %X", timeinfo);
     printf("%s\n\r", buffer);
-    fflush(stdout);
 }
 
 static void drawCalendar(const struct tm *timeinfo)
@@ -76,6 +75,7 @@ static void drawCalendar(const struct tm *timeinfo)
     int needBold = 0;
     printf("%3s%3s%3s%3s%3s%3s%3s", "Mo", "Tu", "We", "Th", "Fr", "Sa", "Su");
     printf("\n\r");
+    size_t month_counter = 0;
 
     for (uint8_t i = 0; i < weeksCount; ++i)
     {
@@ -89,16 +89,20 @@ static void drawCalendar(const struct tm *timeinfo)
                 printf("\033[27m");
                 continue;
             }
-            if (d == 1 && needBold == 0)
+            if (d == 1 && month_counter == 0)
             {
-                needBold = 1;
+                month_counter++;
                 printf("\033[1m");
             }
-            if (j == sizeof(calendar.week[i]) - 1 && needBold == 1)
+            else if (d == 1 && month_counter == 1)
             {
-                needBold = 2;
+                month_counter++;
             }
-            if (d == 1 && needBold == 2)
+            if (month_counter == 1)
+            {
+                printf("\033[1m");
+            }
+            else
             {
                 printf("\033[0m");
             }
@@ -110,20 +114,45 @@ static void drawCalendar(const struct tm *timeinfo)
 
 int main(void)
 {
+
+    
     signal(SIGINT, *interruptHandler);
+    signal(SIGHUP, *interruptHandler);
+    signal(SIGQUIT, *interruptHandler);
+    signal(SIGABRT, *interruptHandler);
     set_conio_terminal_mode();
 
+    time_t now = time(0);
+    time_t calendar = time(0);
+    struct tm timeinfo = *localtime(&now);
+    struct tm calendar_info = *localtime(&now);
+
     char buffer[80];
+    int month_cursor = 0;
     printf("\033[?25l");
+
     while (keepRunning_)
     {
+        now = time(0);
+        if (month_cursor == 0)
+        {
+            calendar_info = timeinfo;
+        }
+
         int keyboard_input = kbhit();
+
         if (keyboard_input)
         {
             int c = getch();
-            if (c == 'x' || c == 26 || c == 3 || c == 4)
+            enum
             {
-                // printf("                                                                  \n\r");
+                CtrlC = 3,
+                CtrlD = 4,
+                CtrlZ = 26,
+                Esc = 27
+            };
+            if (c == CtrlC || c == CtrlC || c == CtrlZ)
+            {
                 printf("\n\r");
                 printf("\033[");
                 printf("%d", 2);
@@ -131,21 +160,37 @@ int main(void)
                 printf("A");
                 break;
             }
+            else if (c == Esc)
+            {
+                int _ = getch();
+                switch (getch())
+                {
+                case 'D':
+                    month_cursor -= 1;
+                    sub_one_month(&calendar_info);
+                    break;
+                case 'C':
+                    month_cursor += 1;
+                    add_one_month(&calendar_info);
+                default:
+                    break;
+                }
+            }
         }
-        else
+        timeinfo = *localtime(&now);
+
+        if (month_cursor != 0)
         {
-            time_t now = time(0);
-            struct tm timeinfo;
-            timeinfo = *localtime(&now);
-
-            drawTimebar(&timeinfo, buffer, sizeof(buffer));
-            drawCalendar(&timeinfo);
-
-            printf("\033[");
-            printf("%d", 8);
-            printf("A");
-            usleep(20 * 1000);
+            timeinfo.tm_mon = calendar_info.tm_mon;
         }
+        void shift_month(time_t * now, struct tm * current, int month_cursor);
+        drawTimebar(&timeinfo, buffer, sizeof(buffer));
+        drawCalendar(&calendar_info);
+
+        printf("\033[");
+        printf("%d", 8);
+        printf("A");
+        usleep(20 * 1000);
     }
 
     for (int i = 0; i < 9; ++i)
@@ -157,6 +202,7 @@ int main(void)
     printf("\033[");
     printf("%d", 9);
     printf("A");
-
+    printf("\033[?25h");
     return 0;
 }
+
