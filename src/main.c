@@ -112,8 +112,21 @@ static void drawCalendar(const struct tm *timeinfo)
     }
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
+    if (argc == 2 && (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0))
+    {
+        printf("calic - \033[1mcal\033[0mendar \033[1mi\033[0mntera\033[1mc\033[0mtive\n");
+        printf("\n");
+        printf("Usage:\n");
+        printf("    left / right arrows - scroll previous or next month\n");
+        printf("    'q'                 - quit\n");
+        printf("\n");
+        printf("License: MIT\n");
+        printf("Sources: https://github.com/calendaric/calic\n");
+        printf("2021 Ivan Azoyan <ivan.azoyan@gmail.com>\n");
+        return 0;
+    }
 
     signal(SIGINT, *interruptHandler);
     signal(SIGHUP, *interruptHandler);
