@@ -1,11 +1,17 @@
+#include "calendar.h"
+
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
 #include <signal.h>
-#include "calendar.h"
+
+#if defined(__WIN32__) || defined(__WIN64__)
+#include <conio.h>
+#elif defined(unix)
+#include <unistd.h>
 #include <sys/select.h>
 #include <termios.h>
+#include <unistd.h>
 
 struct termios orig_termios;
 
@@ -50,6 +56,7 @@ int getch()
         return c;
     }
 }
+#endif
 
 static volatile sig_atomic_t keepRunning_ = 1;
 
@@ -57,8 +64,6 @@ static void interruptHandler(int n)
 {
     (void)n;
     __sync_fetch_and_sub(&keepRunning_, 1);
-    printf("\b\r");
-    printf("                                  \r");
 }
 
 static void drawTimebar(const struct tm *timeinfo, char *buffer, size_t len)
@@ -72,7 +77,6 @@ static void drawCalendar(const struct tm *timeinfo)
     const Time currentTime = convertTime(timeinfo);
     Calendar calendar = createCalendar(&currentTime);
     const uint8_t weeksCount = sizeof(calendar.week) / sizeof(calendar.week[0]);
-    int needBold = 0;
     printf("%3s%3s%3s%3s%3s%3s%3s", "Mo", "Tu", "We", "Th", "Fr", "Sa", "Su");
     printf("\n\r");
     size_t month_counter = 0;
@@ -129,13 +133,11 @@ int main(int argc, char *argv[])
     }
 
     signal(SIGINT, *interruptHandler);
-    signal(SIGHUP, *interruptHandler);
-    signal(SIGQUIT, *interruptHandler);
     signal(SIGABRT, *interruptHandler);
     set_conio_terminal_mode();
 
     time_t now = time(0);
-    time_t calendar = time(0);
+
     struct tm timeinfo = *localtime(&now);
     struct tm calendar_info = *localtime(&now);
 
