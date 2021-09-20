@@ -1,62 +1,10 @@
 #include "calendar.h"
+#include "compatibility.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
-
-#if defined(__WIN32__) || defined(__WIN64__)
-#include <conio.h>
-#elif defined(unix)
-#include <unistd.h>
-#include <sys/select.h>
-#include <termios.h>
-#include <unistd.h>
-
-struct termios orig_termios;
-
-void reset_terminal_mode()
-{
-    tcsetattr(0, TCSANOW, &orig_termios);
-}
-
-void set_conio_terminal_mode()
-{
-    struct termios new_termios;
-
-    /* take two copies - one for now, one for later */
-    tcgetattr(0, &orig_termios);
-    memcpy(&new_termios, &orig_termios, sizeof(new_termios));
-
-    /* register cleanup handler, and set the new terminal mode */
-    atexit(reset_terminal_mode);
-    cfmakeraw(&new_termios);
-    tcsetattr(0, TCSANOW, &new_termios);
-}
-
-int kbhit()
-{
-    struct timeval tv = {0L, 0L};
-    fd_set fds;
-    FD_ZERO(&fds);
-    FD_SET(0, &fds);
-    return select(1, &fds, NULL, NULL, &tv);
-}
-
-int getch()
-{
-    int r = 0;
-    unsigned char c = 0;
-    if ((r = read(0, &c, sizeof(c))) < 0)
-    {
-        return r;
-    }
-    else
-    {
-        return c;
-    }
-}
-#endif
 
 static volatile sig_atomic_t keepRunning_ = 1;
 
@@ -116,20 +64,25 @@ static void drawCalendar(const struct tm *timeinfo)
     }
 }
 
+int help()
+{
+    printf("calic - \033[1mcal\033[0mendar \033[1mi\033[0mntera\033[1mc\033[0mtive\n");
+    printf("\n");
+    printf("Usage:\n");
+    printf("    left / right arrows - scroll previous or next month\n");
+    printf("    'q'                 - quit\n");
+    printf("\n");
+    printf("License: MIT\n");
+    printf("Sources: https://github.com/calendaric/calic\n");
+    printf("2021 Ivan Azoyan <ivan.azoyan@gmail.com>\n");
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {
     if (argc == 2 && (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0))
     {
-        printf("calic - \033[1mcal\033[0mendar \033[1mi\033[0mntera\033[1mc\033[0mtive\n");
-        printf("\n");
-        printf("Usage:\n");
-        printf("    left / right arrows - scroll previous or next month\n");
-        printf("    'q'                 - quit\n");
-        printf("\n");
-        printf("License: MIT\n");
-        printf("Sources: https://github.com/calendaric/calic\n");
-        printf("2021 Ivan Azoyan <ivan.azoyan@gmail.com>\n");
-        return 0;
+        return help();
     }
 
     signal(SIGINT, *interruptHandler);
