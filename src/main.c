@@ -98,9 +98,14 @@ int main(int argc, char *argv[])
     int month_cursor = 0;
     printf("\033[?25l");
 
+    int request_time_counter = 0;
+
     while (keepRunning_)
     {
-        now = time(0);
+        if (request_time_counter == 0)
+        {
+            now = time(0);
+        }
         if (month_cursor == 0)
         {
             calendar_info = timeinfo;
@@ -110,6 +115,8 @@ int main(int argc, char *argv[])
 
         if (keyboard_input)
         {
+            request_time_counter = 0;
+            now = time(0);
             int c = getch();
             enum
             {
@@ -143,20 +150,27 @@ int main(int argc, char *argv[])
                 break;
             }
         }
-        timeinfo = *localtime(&now);
-
-        if (month_cursor != 0)
+        if (request_time_counter == 0)
         {
-            timeinfo.tm_mon = calendar_info.tm_mon;
-        }
-        void shift_month(time_t * now, struct tm * current, int month_cursor);
-        drawTimebar(&timeinfo, buffer, sizeof(buffer));
-        drawCalendar(&calendar_info);
+            timeinfo = *localtime(&now);
 
-        printf("\033[");
-        printf("%d", 8);
-        printf("A");
-        usleep(20 * 1000);
+            if (month_cursor != 0)
+            {
+                timeinfo.tm_mon = calendar_info.tm_mon;
+            }
+            void shift_month(time_t * now, struct tm * current, int month_cursor);
+
+            drawTimebar(&timeinfo, buffer, sizeof(buffer));
+            drawCalendar(&calendar_info);
+
+            printf("\033[");
+            printf("%d", 8);
+            printf("A");
+        }
+        const int sleep_time = 20 * 1000;
+        request_time_counter += sleep_time;
+        usleep(sleep_time);
+        request_time_counter %= 1000000;
     }
 
     for (int i = 0; i < 9; ++i)
