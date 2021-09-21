@@ -33,8 +33,10 @@ enum KeyCodes
     CtrlD = 4,
     CtrlZ = 26,
     Esc = 27,
+    Up = 72,
     Left = 75,
     Right = 77,
+    Down = 80,
 };
 
 void set_conio_terminal_mode()
@@ -82,8 +84,10 @@ enum KeyCodes
     CtrlD = 4,
     CtrlZ = 26,
     Esc = 27,
-    Left = 68,
+    Up = 65,
+    Down = 66,
     Right = 67,
+    Left = 68,
 };
 
 struct termios orig_termios;

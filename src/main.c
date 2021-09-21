@@ -133,10 +133,12 @@ int main(int argc, char *argv[])
             switch (c)
             {
             case Left:
+            case Up:
                 month_cursor -= 1;
                 sub_one_month(&calendar_info);
                 break;
             case Right:
+            case Down:
                 month_cursor += 1;
                 add_one_month(&calendar_info);
             default:
