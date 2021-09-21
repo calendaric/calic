@@ -1,17 +1,17 @@
-#include "calendar.h"
-#include "compatibility.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
 
+#include "calendar.h"
+#include "compatibility.h"
+
 static volatile sig_atomic_t keepRunning_ = 1;
 
 static void interruptHandler(int n)
 {
-    (void)n;
-    __sync_fetch_and_sub(&keepRunning_, 1);
+    printf("Received signal =%d", n);
+    atomic_zeroing(&keepRunning_);
 }
 
 static void drawTimebar(const struct tm *timeinfo, char *buffer, size_t len)
@@ -87,12 +87,13 @@ int main(int argc, char *argv[])
 
     signal(SIGINT, *interruptHandler);
     signal(SIGABRT, *interruptHandler);
+
     set_conio_terminal_mode();
 
     time_t now = time(0);
 
-    struct tm timeinfo = *localtime(&now);
-    struct tm calendar_info = *localtime(&now);
+    struct tm timeinfo = local_time(&now);
+    struct tm calendar_info = local_time(&now);
 
     char buffer[80];
     int month_cursor = 0;
@@ -111,22 +112,14 @@ int main(int argc, char *argv[])
             calendar_info = timeinfo;
         }
 
-        int keyboard_input = kbhit();
+        int keyboard_input = keyboard_hit();
 
         if (keyboard_input)
         {
             request_time_counter = 0;
             now = time(0);
-            int c = getch();
-            enum
-            {
-                CtrlC = 3,
-                CtrlD = 4,
-                CtrlZ = 26,
-                Esc = 27,
-                Left = 68,
-                Right = 67,
-            };
+            int c = get_char();
+
             if (c == CtrlC || c == CtrlD || c == CtrlZ || c == 'q')
             {
                 printf("\n\r");
@@ -152,7 +145,7 @@ int main(int argc, char *argv[])
         }
         if (request_time_counter == 0)
         {
-            timeinfo = *localtime(&now);
+            timeinfo = local_time(&now);
 
             if (month_cursor != 0)
             {
@@ -169,7 +162,7 @@ int main(int argc, char *argv[])
         }
         const int sleep_time = 20 * 1000;
         request_time_counter += sleep_time;
-        usleep(sleep_time);
+        microsec_sleep(sleep_time);
         request_time_counter %= 1000000;
     }
 
@@ -185,3 +178,4 @@ int main(int argc, char *argv[])
     printf("\033[?25h");
     return 0;
 }
+

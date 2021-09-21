@@ -1,3 +1,6 @@
+#ifndef CALENDAR_H
+#define CALENDAR_H
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <time.h>
@@ -58,3 +61,5 @@ void add_one_month(struct tm *tm);
 Calendar createCalendar(const Time *currentTime);
 
 bool isLeap(int year);
+
+#endif
