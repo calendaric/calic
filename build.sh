@@ -1,4 +1,5 @@
 #! /bin/sh
 
-mkdir -p build && \
-cc -O2 -s src/*  -o build/calic
+build_path=release
+mkdir -p $build_path && \
+cc -Os -s src/*  -o $build_path/calic

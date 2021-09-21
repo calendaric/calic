@@ -1,3 +1,3 @@
 #! /bin/sh
 
-sudo cp ./build/calic /usr/bin/
+sudo cp ./release/calic /usr/bin/
