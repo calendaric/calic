@@ -150,8 +150,8 @@ int main(int argc, char *argv[])
             if (month_cursor != 0)
             {
                 timeinfo.tm_mon = calendar_info.tm_mon;
+                timeinfo.tm_year = calendar_info.tm_year;
             }
-            void shift_month(time_t * now, struct tm * current, int month_cursor);
 
             drawTimebar(&timeinfo, buffer, sizeof(buffer));
             drawCalendar(&calendar_info);
@@ -178,4 +178,3 @@ int main(int argc, char *argv[])
     printf("\033[?25h");
     return 0;
 }
-

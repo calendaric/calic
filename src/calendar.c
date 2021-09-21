@@ -46,7 +46,7 @@ static WeekDay weekDayInMonthBegin(int currentMonthDay, WeekDay currentWeekDay)
 	return currentWeekDay;
 }
 
-static void fillCurrentMonth(Calendar* calendar, size_t weekIndex, size_t weekDayIndex, size_t daysCountInCurrentMonth)
+static void fillCurrentMonth(Calendar *calendar, size_t weekIndex, size_t weekDayIndex, size_t daysCountInCurrentMonth)
 {
 	const size_t rowCount = sizeof(calendar->week) / sizeof(calendar->week[0]);
 	const size_t colCount = sizeof(calendar->week[0]);
@@ -69,7 +69,7 @@ static void fillCurrentMonth(Calendar* calendar, size_t weekIndex, size_t weekDa
 	}
 }
 
-static void fillPreviousMonth(Calendar* calendar, size_t weekIndex, size_t weekDayIndex, size_t daysCountInPreviousMonth)
+static void fillPreviousMonth(Calendar *calendar, size_t weekIndex, size_t weekDayIndex, size_t daysCountInPreviousMonth)
 {
 	// offset to last days of previous month
 	if (weekIndex == 1)
@@ -93,7 +93,7 @@ static void fillPreviousMonth(Calendar* calendar, size_t weekIndex, size_t weekD
 	}
 }
 
-Time convertTime(const struct tm* tm)
+Time convertTime(const struct tm *tm)
 {
 	Time time;
 	time.seconds = tm->tm_sec;
@@ -116,9 +116,9 @@ Time convertTime(const struct tm* tm)
 	return time;
 }
 
-Calendar createCalendar(const Time* currentTime)
+Calendar createCalendar(const Time *currentTime)
 {
-	Calendar calendar = { .weekNumber = 0,.currentDayNumber = 0,.week = {{0}} };
+	Calendar calendar = {.weekNumber = 0, .currentDayNumber = 0, .week = {{0}}};
 	calendar.currentDayNumber = (int8_t)currentTime->monthDay;
 
 	const WeekDay weekDayFirst = weekDayInMonthBegin(currentTime->monthDay, currentTime->weekDay);
@@ -147,7 +147,7 @@ int dow(int day, int month, int year)
 	return (day + ((153 * (month + 12 * ((14 - month) / 12) - 3) + 2) / 5) + (365 * (year + 4800 - ((14 - month) / 12))) + ((year + 4800 - ((14 - month) / 12)) / 4) - ((year + 4800 - ((14 - month) / 12)) / 100) + ((year + 4800 - ((14 - month) / 12)) / 400) - 32045) % 7;
 }
 
-void sub_one_month(struct tm* timeinfo)
+void sub_one_month(struct tm *timeinfo)
 {
 	if (timeinfo->tm_mon == 0)
 	{
@@ -162,7 +162,7 @@ void sub_one_month(struct tm* timeinfo)
 	timeinfo->tm_wday = dow(timeinfo->tm_mday + 1, timeinfo->tm_mon + 1, 1900 + timeinfo->tm_year);
 }
 
-void add_one_month(struct tm* timeinfo)
+void add_one_month(struct tm *timeinfo)
 {
 	if (timeinfo->tm_mon == 11)
 	{
