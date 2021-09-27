@@ -34,7 +34,7 @@ static void drawCalendar(const struct tm *timeinfo)
         for (uint8_t j = 0; j < sizeof(calendar.week[i]); ++j)
         {
             const uint8_t d = calendar.week[i][j];
-            if (d == calendar.currentDayNumber)
+            if (d == calendar.currentDayNumber && month_counter == 1)
             {
                 printf(" \033[7m");
                 printf("%*d", 2, d);
