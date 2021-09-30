@@ -3,9 +3,8 @@ Terminal interactive calendar written in C
 
 Install and run:
 ```
-mkdir build && cd build && cmake ..
-make
-make install
+./build.sh
+./install.sh
 ```
 ```
 calic
