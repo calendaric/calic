@@ -6,4 +6,4 @@ Install and run:
 ./build.sh
 ./install.sh
 ```
-[![asciicast](https://asciinema.org/a/85irtAYt01NEl6Ik4ei6eIkQR.svg?autoplay=1)](https://asciinema.org/a/85irtAYt01NEl6Ik4ei6eIkQR)
+![calic2](https://user-images.githubusercontent.com/10195144/136410499-7b09c27a-8c95-49c9-a55f-d9cec7f9b1af.gif)
